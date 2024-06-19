@@ -1,21 +1,22 @@
 import React, { FC } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import { Post } from "../../../navigaton/Types";
+import { Product } from "../../../navigaton/Types";
+import { Colors } from "../../../theme/Colors";
 type Props = {
-  furniture: Post;
+  furniture: Product;
 };
 const ProductDetailHeader: FC<Props> = ({ furniture }) => {
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
         <Text style={styles.header}>{furniture.productName}</Text>
-        <Text style={styles.company}>By {furniture.startingBid}</Text>
+        <Text style={styles.company}> By {furniture.userName}</Text>
       </View>
-      <View style={styles.ratingContainer}>
+      {/* <View style={styles.ratingContainer}>
         <MaterialCommunityIcons name="star" color={"#FACC0F"} size={25} />
         <Text style={styles.ratingLabel}>4.9</Text>
-      </View>
+      </View> */}
     </View>
   );
 };
@@ -38,12 +39,13 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: "600",
-    color: "#545264",
+    color: Colors.yellow,
   },
   company: {
     fontSize: 12,
     fontWeight: "500",
     color: "#666",
+    marginVertical: 10,
   },
   ratingContainer: {
     borderColor: "#f0edf5",

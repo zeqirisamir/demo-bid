@@ -1,4 +1,4 @@
-import React, {FC} from 'react';
+import React, { FC } from "react";
 import {
   Pressable,
   Text,
@@ -7,8 +7,9 @@ import {
   TextStyle,
   ViewStyle,
   StyleSheet,
-} from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
+} from "react-native";
+import Feather from "react-native-vector-icons/Feather";
+import { Colors } from "../../theme/Colors";
 export type IconLibrary = {
   [key: string]: () => React.ComponentType<any>;
 };
@@ -21,14 +22,14 @@ export type CustomButtonProps = {
   loading?: boolean;
   iconLeft?: string;
   iconRight?: string;
-  iconFamily?: 'Feather';
-  variant?: 'text' | 'contained' | 'outline';
+  iconFamily?: "Feather";
+  variant?: "text" | "contained" | "outline";
   style?: StyleProp<ViewStyle>;
   titleStyle?: StyleProp<TextStyle>;
   iconSize?: number;
   iconColor?: string;
   onPress?: () => void;
-  roundness?: 'full' | 'medium' | 'small';
+  roundness?: "full" | "medium" | "small";
   full?: boolean;
 };
 
@@ -38,13 +39,13 @@ const CustomButton: FC<CustomButtonProps> = ({
   iconLeft,
   titleStyle,
   iconSize = 16,
-  iconColor = 'white',
+  iconColor = "white",
   iconRight,
-  iconFamily = 'Feather',
-  variant = 'contained',
+  iconFamily = "Feather",
+  variant = "contained",
   style = {},
   onPress,
-  roundness = 'medium',
+  roundness = "medium",
   full = false,
 }: CustomButtonProps) => {
   const Icon = ICON_LIBRARIES[iconFamily]();
@@ -62,8 +63,8 @@ const CustomButton: FC<CustomButtonProps> = ({
     styles.text,
     styles[`${variant}Text`],
     styles[`${roundness}RoundnessText`],
-    iconLeft && {marginLeft: 8},
-    iconRight && {marginRight: 8},
+    iconLeft && { marginLeft: 8 },
+    iconRight && { marginRight: 8 },
     titleStyle,
   ] as StyleProp<TextStyle>;
 
@@ -71,11 +72,12 @@ const CustomButton: FC<CustomButtonProps> = ({
     <Pressable
       onPress={onPress}
       disabled={loading}
-      style={({pressed}) => [
+      style={({ pressed }) => [
         buttonStyles,
         pressed && styles.buttonPressed,
         pressed && styles.shadow,
-      ]}>
+      ]}
+    >
       {loading ? (
         <ActivityIndicator size="small" color="white" />
       ) : (
@@ -101,49 +103,47 @@ const styles = StyleSheet.create({
     minWidth: 64,
     borderRadius: 4,
     paddingHorizontal: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
   },
   text: {
     fontSize: 14,
-    fontWeight: '600',
-    color: 'white',
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "white",
+    textAlign: "center",
   },
   withIconText: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   fullWidth: {
-    width: '100%',
+    width: "100%",
   },
   buttonPressed: {
     opacity: 0.9,
   },
   containedButton: {
-    backgroundColor: '#2196F3',
+    backgroundColor: "#2196F3",
   },
   textButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   outlineButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 1,
-    borderColor: '#2196F3',
+    borderColor: "#2196F3",
   },
   containedText: {
-    color: 'white',
+    color: Colors.black_txt,
   },
   textText: {
-    color: '#2196F3',
+    color: Colors.black_txt,
   },
   outlineText: {
-    color: '#2196F3',
+    color: "#2196F3",
   },
-  fullRoundness: {
-    borderRadius: 40,
-  },
+  fullRoundness: {},
   mediumRoundness: {
     borderRadius: 4,
   },
@@ -152,25 +152,24 @@ const styles = StyleSheet.create({
   },
   fullRoundnessText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   mediumRoundnessText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   smallRoundnessText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   shadow: {
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 0.5,
     },
     shadowOpacity: 0.18,
     shadowRadius: 1.0,
-
-    elevation: 1,
+    elevation: 0.5,
   },
 });

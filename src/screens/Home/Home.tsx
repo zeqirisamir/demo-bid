@@ -1,91 +1,101 @@
-import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { View, ScrollView, StyleSheet, Text } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../redux/auth/AuthReducer";
-import { RootState } from "../../redux/store";
-import { getPosts } from "../../actions/posts/postsActions";
 import { useNavigation } from "@react-navigation/native";
+import Animated from "react-native-reanimated";
+import { RootState } from "../../redux/store";
+import { deletePost, getPosts } from "../../actions/posts/postsActions";
 import { HomeNavigationProp, Product } from "../../navigaton/Types";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import Post from "../../components/post/Post";
 import Header from "../../components/header/Header";
 import { Colors } from "../../theme/Colors";
 import { setPosts } from "../../redux/posts/postsReducer";
 import ProductCard from "../../components/products/ProductCard";
-import ListHeader from "../../components/products/ListHeader";
 import FilterChips from "../../components/products/FilterChips";
 import { SCREEN_HEIGHT } from "../../constants/Screen";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export const CONTAINER_H_P = 20;
 const Home = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<HomeNavigationProp["navigation"]>();
-  const user = useSelector((state: RootState) => state.authReducer.userType);
   const posts = useSelector((state: RootState) => state.postsReducer.posts);
   const insets = useSafeAreaInsets();
-  console.log(posts);
+  const [filteredPosts, setFilteredPosts] = useState<Product[]>(posts);
+
+  useEffect(() => {
+    handleGetPosts();
+    onSelectTag(null);
+  }, []);
 
   const handleGetPosts = async () => {
     try {
       const res = await getPosts();
       dispatch(setPosts(res.data));
-      console.log("from ni", res?.data);
-    } catch (error: any) {
+      //console.log("data", res.data);
+    } catch (error) {
       console.log(error);
     }
   };
-  useEffect(() => {
-    console.log("postts", posts);
-    handleGetPosts();
-  }, []);
 
-  console.log("data:::::", posts);
+  const handledeletePosts = async (id: number) => {
+    try {
+      const res = await deletePost(id);
+      console.log("deleting :::", res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleCardPress = (product: Product) => {
     navigation.navigate("PostDetails", {
       product: product,
     });
   };
 
-  const renderItem = ({ item }: { item: Product }) => (
-    <ProductCard
-      tag={`image_${item.id}`}
-      onPressCard={() => handleCardPress(item)}
-      key={item.id}
-      product={item}
-    />
+  const onSelectTag = useCallback(
+    (selectedTag: string | null) => {
+      if (selectedTag) {
+        const filtered = posts?.filter(
+          (post: Product) => post.category === selectedTag
+        );
+        setFilteredPosts(filtered);
+      } else {
+        setFilteredPosts(posts);
+      }
+    },
+    [posts]
   );
+
   return (
     <View style={styles.screen}>
       <Header
         title={"Home"}
-        showBackBtn={false}
-        containerStyle={{ paddingHorizontal: 15, borderBottomWidth: 0 }}
+        showBackBtn={true}
+        containerStyle={{ borderBottomWidth: 0 }}
+        showSummary
+        showLeftIcon
+        handleBackBtn={() => navigation.navigate("ProfileMenu")}
+        handleRightBtn={() => navigation.navigate("Settings")}
       />
 
       <Animated.View style={[styles.container, { paddingTop: insets.bottom }]}>
-        <FlatList
-          contentContainerStyle={styles.content}
-          testID="productsFlatList"
-          ListHeaderComponent={() => {
-            return (
-              <>
-                <ListHeader />
-                <FilterChips />
-              </>
-            );
-          }}
-          data={posts}
-          renderItem={renderItem}
-          keyExtractor={(item) => item._id.toString()}
-        />
+        <ScrollView contentContainerStyle={styles.content}>
+          <FilterChips onSelectTag={onSelectTag} />
+          {Array.isArray(filteredPosts) &&
+            filteredPosts.map((item: Product, key: any) => (
+              <ProductCard
+                tag={`image_${item?._id}`}
+                onPressCard={() => handleCardPress(item)}
+                key={`product-${key}`}
+                product={item}
+                onPress2Card={(id) => handledeletePosts(id)}
+              />
+            ))}
+          {Array.isArray(filteredPosts) && filteredPosts.length === 0 && (
+            <Text style={styles.noPostsText}>
+              There are no posts from this category
+            </Text>
+          )}
+        </ScrollView>
       </Animated.View>
     </View>
   );
@@ -96,15 +106,18 @@ export default Home;
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.main_white,
   },
   container: {
     flex: 1,
   },
   content: {
-    paddingVertical: 50,
     paddingHorizontal: 5,
     paddingBottom: SCREEN_HEIGHT / 4,
-    justifyContent: "center",
+  },
+  noPostsText: {
+    textAlign: "center",
+    color: "red",
+    marginTop: 10,
   },
 });

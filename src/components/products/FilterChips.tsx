@@ -1,80 +1,51 @@
-import { useCallback } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
-import Animated, {
-  measure,
-  runOnUI,
-  useAnimatedRef,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from "react-native-reanimated";
-import { CONTAINER_H_P } from "../../screens/Home/Home";
+import React, { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { TAGS } from "../../service/types";
+import { Colors } from "../../theme/Colors";
 
-const TAGS = ["All", "Chair", "Table", "Lamp", "Floor"];
-const TAG_WIDTH = 64;
-
-const FilterChips = () => {
-  const animatedRef = useAnimatedRef<View>();
-  const translateX = useSharedValue(0);
-  const focusedIndex = useSharedValue(0);
-
-  const tagAStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-    zIndex: -1,
-  }));
-
-  const tagTextStyle = (index: number) => {
-    return useAnimatedStyle(() => ({
-      color: focusedIndex.value === index ? "#FFFFFF" : "#545264",
-    }));
+export type FilterProps = {
+  onSelectTag: (param: string | null) => void;
+};
+const FilterChips = ({ onSelectTag }: FilterProps) => {
+  const handleSelected = (tag: string) => {
+    onSelectTag(tag === "All" ? null : tag);
+    setSelected(tag);
   };
-
-  const handleOnLayout = (index: number, xValue: number) => {
-    if (index === 0) {
-      translateX.value = xValue;
-    }
-  };
-
-  const handlePress = useCallback((index: number) => {
-    runOnUI(() => {
-      "worklet";
-      const measured = measure(animatedRef);
-      const pageX = Math.round(measured?.pageX);
-      const distance = Math.abs(pageX - CONTAINER_H_P);
-      focusedIndex.value = index;
-      translateX.value = withTiming(distance, { duration: 200 });
-    })();
-  }, []);
+  const [selected, setSelected] = useState<string>("All");
 
   return (
     <View style={styles.container}>
       <View style={styles.tagContainer}>
         {TAGS.map((tag, index) => {
-          const textStyle = tagTextStyle(index);
           return (
             <Pressable
               key={tag}
-              testID={tag}
-              onLayout={({
-                nativeEvent: {
-                  layout: { x },
-                },
-              }) => handleOnLayout(index, x)}
-              onPress={() => handlePress(index)}
+              onPress={() => handleSelected(tag)}
               style={({ pressed }) => [
                 styles.tag,
-                { opacity: pressed ? 0.5 : 1 },
+                // {
+                //   backgroundColor: Boolean(pressed || selected === tag)
+                //     ? "#545264"
+                //     : Colors.main_white,
+                // },
               ]}
-              ref={animatedRef}
             >
-              <Animated.Text style={[styles.tagText, textStyle]}>
+              <Text
+                style={[
+                  styles.tagText,
+                  {
+                    color: Boolean(selected === tag)
+                      ? Colors.yellow
+                      : "#545264",
+                  },
+                ]}
+              >
                 {tag}
-              </Animated.Text>
+              </Text>
             </Pressable>
           );
         })}
       </View>
-      <Animated.View style={[styles.animatedPoint, tagAStyle]} />
     </View>
   );
 };
@@ -82,7 +53,8 @@ const FilterChips = () => {
 const styles = StyleSheet.create({
   container: {
     position: "relative",
-    marginVertical: 20,
+    marginBottom: 20,
+    backgroundColor: Colors.main_white,
   },
   tagContainer: {
     flexDirection: "row",
@@ -91,21 +63,21 @@ const styles = StyleSheet.create({
   tag: {
     alignItems: "center",
     justifyContent: "center",
-    width: TAG_WIDTH,
     height: 30,
-    zIndex: 4,
-  },
-  animatedPoint: {
-    width: TAG_WIDTH,
-    height: 30,
-    borderRadius: 20,
-    backgroundColor: "#545264",
-    position: "absolute",
+    borderRadius: 4,
+    borderBottomWidth: 1,
+    paddingHorizontal: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 2,
+      height: 0,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   tagText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "black",
   },
 });
 

@@ -18,6 +18,9 @@ import * as ImagePicker from "expo-image-picker";
 import { Colors } from "../../theme/Colors";
 import { createPost } from "../../actions/posts/postsActions";
 import { RootState } from "../../redux/store";
+import * as ImageManipulator from "expo-image-manipulator";
+import * as FileSystem from "expo-file-system";
+import { handleLogout } from "../../data/constants";
 
 const DashboardScreen = () => {
   const dispatch = useDispatch();
@@ -29,9 +32,11 @@ const DashboardScreen = () => {
     startingBid: 0,
     duration: "1",
     imgSrc: "",
+    category: "All",
   });
 
   const [showPicker, setShowPicker] = useState(false);
+  const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [auctionDuration, setAuctionDuration] = useState("1");
   const [image, setImage] = useState({
     base64: "",
@@ -48,21 +53,31 @@ const DashboardScreen = () => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      aspect: [2, 2],
-      quality: 0.2,
+      aspect: [7, 7],
+      quality: 0.9,
       base64: true,
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const firstAsset = result.assets[0];
+      const resizedUri = await resizeImage(firstAsset.uri, 100, 100);
 
-      console.log(JSON.stringify(firstAsset.base64));
+      const base64String = await FileSystem.readAsStringAsync(resizedUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
 
-      setImage({ base64: firstAsset.base64 || "", url: firstAsset.uri });
+      console.log(base64String);
+      setImage({ base64: base64String || "", url: firstAsset.uri });
     }
   };
-
+  const resizeImage = async (uri: string, width: number, height: number) => {
+    const { uri: resizedUri } = await ImageManipulator.manipulateAsync(
+      uri,
+      [{ resize: { width, height } }] // Resize operation
+    );
+    return resizedUri;
+  };
   const handleCreatePost = async () => {
     console.log(data);
     console.log(image);
@@ -72,41 +87,57 @@ const DashboardScreen = () => {
         description: data?.description,
         startingBid: data?.startingBid,
         duration: data?.duration,
-        imgSrc: image.base64,
-        userName: user.name,
+        imgSrc: image?.base64,
+        userName: user?.data?.firstName,
+        category: data?.category,
       });
-
+      console.log(user?.data);
       if (res?.status === 201) {
         setCreated(true);
+        setData({
+          productName: "",
+          description: "",
+          startingBid: 0,
+          duration: "1",
+          imgSrc: "",
+          category: "All",
+        });
+        setImage({ base64: "", url: "" });
         setTimeout(() => {
           setCreated(false);
         }, 3000);
+      } else {
+        console.log(res?.status);
       }
     } catch (error) {
       console.error("Error:", error);
     }
   };
 
-  const handleStartingBidChange = (text) => {
+  const handleStartingBidChange = (text: number) => {
     // Input validation to allow only numeric values
     const numericRegex = /^[0-9]*$/;
-    if (numericRegex.test(text) || text === "") {
+    if (
+      numericRegex.test(text as unknown as string) ||
+      (text as unknown as string) === ""
+    ) {
       setData({ ...data, startingBid: text });
     }
   };
 
   return (
-    <>
+    <View style={styles.screen}>
       <Header
         title={"Dashboard"}
-        handleBackBtn={() => dispatch(logout())}
+        //@ts-ignore
+        handleBackBtn={() => handleLogout(dispatch)}
         containerStyle={{
-          paddingHorizontal: 15,
-          borderBottomWidth: 1,
+          borderBottomWidth: 0,
         }}
         showCancelBtn={true}
         handleRightBtn={handleCreatePost}
         rightButtonText="Create"
+        leftButtonText="Log out"
       />
 
       <View style={styles.container}>
@@ -116,9 +147,11 @@ const DashboardScreen = () => {
           value={data.productName}
           onChangeText={(text) => setData({ ...data, productName: text })}
           style={styles.input}
+          placeholderTextColor={Colors.white}
         />
         <TextInput
           placeholder="Description"
+          placeholderTextColor={Colors.white}
           value={data.description}
           onChangeText={(text) => setData({ ...data, description: text })}
           style={styles.description}
@@ -126,32 +159,61 @@ const DashboardScreen = () => {
         />
         <TextInput
           placeholder="Starting Bid £"
+          placeholderTextColor={Colors.white}
           value={data.startingBid as unknown as string}
+          //@ts-ignore
           onChangeText={handleStartingBidChange}
           style={styles.input}
           keyboardType="numeric"
         />
+        <TouchableOpacity
+          onPress={() => setShowCategoryPicker(!showCategoryPicker)}
+          style={styles.pickerButton}
+        >
+          <Text style={styles.label}>Choose category: {data?.category}</Text>
+        </TouchableOpacity>
+        {showCategoryPicker && (
+          <Picker
+            selectedValue={data?.category}
+            onValueChange={(itemValue) => {
+              setData({ ...data, category: itemValue });
+              setShowCategoryPicker(false);
+            }}
+            style={styles.picker}
+          >
+            <Picker.Item color={Colors.white} label="All" value="All" />
+            <Picker.Item
+              color={Colors.white}
+              label="Technology"
+              value="Technology"
+            />
+            <Picker.Item color={Colors.white} label="Home" value="Home" />
+            <Picker.Item color={Colors.white} label="Food" value="Food" />
+            <Picker.Item color={Colors.white} label="Cars" value="Cars" />
+          </Picker>
+        )}
 
         <TouchableOpacity
           onPress={() => setShowPicker(!showPicker)}
           style={styles.pickerButton}
         >
           <Text style={styles.label}>
-            Auction Duration: {auctionDuration} day(s)
+            Auction Duration: {data?.duration} day(s)
           </Text>
         </TouchableOpacity>
+
         {showPicker && (
           <Picker
-            selectedValue={auctionDuration}
+            selectedValue={data?.duration}
             onValueChange={(itemValue) => {
               setData({ ...data, duration: itemValue });
               setShowPicker(false);
             }}
             style={styles.picker}
           >
-            <Picker.Item label="1 day" value="1" />
-            <Picker.Item label="2 days" value="2" />
-            <Picker.Item label="3 days" value="3" />
+            <Picker.Item color={Colors.white} label="1 day" value="1" />
+            <Picker.Item color={Colors.white} label="2 days" value="2" />
+            <Picker.Item color={Colors.white} label="3 days" value="3" />
           </Picker>
         )}
         <TouchableOpacity
@@ -174,11 +236,15 @@ const DashboardScreen = () => {
           </View>
         )}
       </View>
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: Colors.black_txt,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 20,
@@ -188,6 +254,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
+    color: Colors.white,
   },
   input: {
     borderWidth: 1,
@@ -195,6 +262,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
+    color: Colors.white,
   },
   description: {
     borderWidth: 1,
@@ -203,25 +271,29 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
     height: "20%",
+    color: Colors.white,
   },
   pickerButton: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
+    marginTop: 10,
   },
   label: {
     fontWeight: "bold",
-    color: Colors.grey_text,
+    color: Colors.white,
   },
   uploadText: {
     fontWeight: "bold",
+    color: Colors.yellow,
   },
   picker: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
     marginBottom: 10,
+    color: Colors.white,
   },
   button: {
     backgroundColor: "blue",
@@ -231,7 +303,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonText: {
-    color: "white",
+    color: Colors.white,
     fontWeight: "bold",
     fontSize: 16,
   },
@@ -239,7 +311,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
   },
   success: {
-    backgroundColor: Colors.black_txt,
+    backgroundColor: Colors.yellow,
     paddingVertical: 10,
     width: "95%",
     color: Colors.white,

@@ -48,8 +48,7 @@ export const EditPhotoButton = ({
           {hasError && (
             <>
               <Text style={styles.errorText}>
-                Adding your photo will help us identify you quickly and ensure a
-                personalized and efficient workout.
+                Add your photo so we can identify you better
               </Text>
             </>
           )}
@@ -66,12 +65,11 @@ export const EditPhotoButton = ({
   );
 };
 
-export const editPhotoButtonStyles = ({ isHebrew, hasError, form }: any) =>
+export const editPhotoButtonStyles = ({ hasError, form }: any) =>
   StyleSheet.create({
     container: {
       display: "flex",
       alignItems: "center",
-      flexDirection: isHebrew ? "row-reverse" : "row",
     },
     errorText: {
       flex: 1,
@@ -85,13 +83,13 @@ export const editPhotoButtonStyles = ({ isHebrew, hasError, form }: any) =>
       width: 80,
       height: 80,
       borderRadius: 8,
-      borderColor: Colors.dark_grey,
+      borderColor: Colors.yellow,
       borderWidth: 0.5,
       alignItems: "center",
       justifyContent: "center",
       ...(hasError && {
         color: Colors.grey_text,
-        backgroundColor: Colors.dark_grey,
+        backgroundColor: Colors.white,
       }),
       ...(form === "circle" && {
         borderRadius: 50,
@@ -103,7 +101,6 @@ export const editPhotoButtonStyles = ({ isHebrew, hasError, form }: any) =>
       display: "flex",
       alignItems: "flex-start",
       justifyContent: "flex-start",
-      flexDirection: isHebrew ? "row-reverse" : "row",
     },
     userProfilePhoto: {
       width: 80,
@@ -115,7 +112,7 @@ export const editPhotoButtonStyles = ({ isHebrew, hasError, form }: any) =>
       }),
     },
     addPhotoText: {
-      color: Colors.black_txt,
+      color: Colors.yellow,
       marginTop: 8,
       alignSelf: "center",
     },
@@ -125,7 +122,6 @@ export const editPhotoButtonStyles = ({ isHebrew, hasError, form }: any) =>
       alignItems: "center",
       justifyContent: "center",
       marginBottom: 15,
-
       marginRight: "auto",
     },
     requiredAsterisk: {
@@ -137,7 +133,7 @@ export const editPhotoButtonStyles = ({ isHebrew, hasError, form }: any) =>
       marginLeft: 10,
     },
     editText: {
-      color: Colors.fill_blue,
+      color: Colors.yellow,
       marginBottom: -10,
       marginTop: 10,
     },

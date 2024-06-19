@@ -1,47 +1,77 @@
-import React from "react";
-import { StyleSheet, Text, View, Image, Pressable } from "react-native";
-import Animated from "react-native-reanimated";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  Pressable,
+  Animated,
+} from "react-native";
 import CustomButton from "../shared/CustomButton";
 import { Colors } from "../../theme/Colors";
-import { Post } from "../../navigaton/Types";
+import { Product } from "../../navigaton/Types";
+import { likePost } from "../../actions/posts/postsActions";
+
+export type ProductProps = {
+  product: Product;
+  onPressCard: () => void;
+  tag: string;
+  onPress2Card: (id: number) => void;
+};
 
 const ProductCard = ({
   product,
   onPressCard,
   tag,
-}: {
-  product: Post;
-  onPressCard: () => void;
-  tag: string;
-}) => {
+  onPress2Card,
+}: ProductProps) => {
+  const translateX = useRef(new Animated.Value(100)).current;
+
+  useEffect(() => {
+    Animated.timing(translateX, {
+      toValue: 0,
+      duration: 1000,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
   return (
-    <View style={styles.card}>
+    <Animated.View style={[styles.card, { transform: [{ translateX }] }]}>
       <Pressable onPress={onPressCard}>
-        <Animated.Image
-          sharedTransitionTag={`image_${product.id}`}
-          source={product.imgSrc}
+        <Image
+          source={{ uri: `data:image;base64,${product?.imgSrc}` }}
           style={styles.image}
         />
       </Pressable>
-      <View style={styles.content}>
-        <Pressable onPress={onPressCard} testID={`productCard${product.id}`}>
-          <Text style={styles.title}>{product.productName}</Text>
+      <Pressable onPress={onPressCard} style={styles.content}>
+        <View testID={`productCard${product?._id}`}>
+          <Text style={styles.title}>{product?.productName}</Text>
           {/* <Text style={styles.company}>By {product.}</Text> */}
-          <Text style={styles.description}>{product.description}</Text>
-        </Pressable>
-        <View style={styles.footer}>
-          <Text style={styles.price}>${product.startingBid}</Text>
-          <CustomButton title="Buy" style={styles.button} roundness={"full"} />
+          <Text style={styles.description}>{product?.description}</Text>
         </View>
-      </View>
-    </View>
+        <View style={styles.footer}>
+          <Text style={styles.price}>${product?.startingBid}</Text>
+          <CustomButton
+            onPress={onPressCard}
+            title="Details"
+            style={styles.button}
+            roundness={"full"}
+          />
+          {/* <CustomButton
+            onPress={() => onPress2Card(product?._id)}
+            title="delete"
+            style={styles.button}
+            roundness={"full"}
+          /> */}
+        </View>
+      </Pressable>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
-    backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
     marginVertical: 8,
@@ -52,6 +82,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    borderBottomWidth: 0.2,
   },
   image: {
     resizeMode: "stretch",
@@ -66,7 +97,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: Colors.main_blue,
+    color: Colors.black_txt,
   },
   company: {
     fontSize: 14,
@@ -90,10 +121,10 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: Colors.yellow,
   },
   button: {
-    backgroundColor: "green",
+    backgroundColor: Colors.main_white,
     height: 34,
     marginLeft: 16,
     paddingHorizontal: 16,

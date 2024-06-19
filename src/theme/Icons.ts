@@ -1,12 +1,13 @@
-import React from 'react';
-import back from '../assets/icons/back.svg';
-import tick from '../assets/icons/tick.svg';
-import calendar from '../assets/icons/calendar.svg';
-import error from '../assets/icons/error.svg';
-import info from '../assets/icons/info.svg';
-import next from '../assets/icons/next.svg';
-import close from '../assets/icons/close.svg';
-import done from '../assets/icons/done.svg'
+import React from "react";
+import back from "../assets/icons/back.svg";
+import tick from "../assets/icons/tick.svg";
+import calendar from "../assets/icons/calendar.svg";
+import error from "../assets/icons/error.svg";
+import info from "../assets/icons/info.svg";
+import next from "../assets/icons/next.svg";
+import close from "../assets/icons/close.svg";
+import done from "../assets/icons/done.svg";
+import close2 from "../assets/icons/close2.svg";
 
 const Icons: IconsBox = {
   back,
@@ -16,7 +17,8 @@ const Icons: IconsBox = {
   next,
   info,
   close,
-  done
+  done,
+  close2,
 };
 
 export default Icons;
@@ -24,11 +26,12 @@ export default Icons;
 export type IconsBox = { [key in IconName]: React.ElementType };
 
 export type IconName =
-  | 'done'
-  | 'back'
+  | "done"
+  | "back"
   | "tick"
-  | 'calendar'
+  | "calendar"
   | "error"
-  | 'next'
-  | 'info'
-  | 'close'
+  | "next"
+  | "info"
+  | "close"
+  | "close2";

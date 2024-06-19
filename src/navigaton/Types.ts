@@ -1,47 +1,48 @@
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 export type AuthStackParams = {
-    SignIn: undefined;
-    SignUp: undefined;
-    Confirm: {
-      email: string;
-      password: string;
-    };
-    ForgotPassword: undefined;
+  SignIn: undefined;
+  SignUp: undefined;
+  Confirm: {
+    email: string;
+    password: string;
   };
-  export type DashboardStackParams = {
-    DashboardScreen:undefined
-  };
+  ForgotPassword: undefined;
+};
+export type DashboardStackParams = {
+  DashboardScreen: undefined;
+};
 export type HomeParams = {
-    Home: undefined;
-   Settings:undefined
-   PostDetails:{product:Product}
-  };
+  Home: undefined;
+  Settings: undefined;
+  PostDetails: { product: Product };
+  Profile: undefined;
+  ProfileMenu: undefined;
+};
 
-  export interface Product {
-    id: number;
-            description: string;
-            duration: string;
-            productName: string;
-            imgSrc: any;
-            startingBid: number;
-  }
-  export type AuthNavigationProp = NativeStackScreenProps<
+export interface Product {
+  like: any;
+  _id: number;
+  description: string;
+  duration: string;
+  productName: string;
+  imgSrc: any;
+  startingBid: number;
+  userName?: string;
+  category?: string;
+}
+export type AuthNavigationProp = NativeStackScreenProps<
   AuthStackParams,
-  'Confirm'
+  "Confirm"
 >;
 
-export type HomeNavigationProp = NativeStackScreenProps<
-  HomeParams,
-  'Home'
->;
+export type HomeNavigationProp = NativeStackScreenProps<HomeParams, "Home">;
 export type PostDetailsNavigationProp = NativeStackScreenProps<
   HomeParams,
-  'PostDetails'
+  "PostDetails"
 >;
 
 export type DashboardNavigationProp = NativeStackScreenProps<
-DashboardStackParams,
-  'DashboardScreen'
+  DashboardStackParams,
+  "DashboardScreen"
 >;

@@ -35,11 +35,12 @@ const Signup = () => {
 
   const handleSubmit = async () => {
     const isBuyer = data.userType === "buyer";
-    const requestData = { ...data, profilePic: userPicture.base64 };
+    console.log("data sennding:", data);
+
     try {
-      const { res } = await signUp(requestData, isBuyer);
+      const { res } = await signUp(data, isBuyer);
       console.log("from ni", res);
-      if (res.status === 200) {
+      if (res?.status === 200) {
         Alert.alert("User created successfullys");
       }
     } catch (error: any) {}
@@ -74,11 +75,17 @@ const Signup = () => {
   };
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <Header title={"Sign Up"} handleBackBtn={() => navigation.goBack()} />
+    <View style={styles.screen}>
+      <Header
+        containerStyle={{ borderBottomWidth: 0 }}
+        title={"Sign Up"}
+        showBackBtn
+        leftButtonText="Back"
+        handleBackBtn={() => navigation.goBack()}
+      />
 
       <View style={styles.container}>
-        <EditPhotoButton
+        {/* <EditPhotoButton
           showAddText={true}
           containerStyle={{}}
           form={"circle"}
@@ -86,27 +93,31 @@ const Signup = () => {
           disableBtn={false}
           onPress={handleLaunchGallery}
           hasError={false}
-        />
+        /> */}
         <TextInput
           placeholder="Firstname"
           value={data?.firstName}
+          placeholderTextColor={Colors.light_grey}
           style={styles.input}
           onChangeText={(e) => setData({ ...data, firstName: e })}
         />
         <TextInput
           placeholder="LastName"
           value={data?.lastName}
+          placeholderTextColor={Colors.light_grey}
           style={styles.input}
           onChangeText={(e) => setData({ ...data, lastName: e })}
         />
         <TextInput
           placeholder="Email"
+          placeholderTextColor={Colors.light_grey}
           value={data?.email}
           style={styles.input}
           onChangeText={(e) => setData({ ...data, email: e.toLowerCase() })}
         />
         <TextInput
           placeholder="Password"
+          placeholderTextColor={Colors.light_grey}
           value={data?.password}
           style={styles.input}
           onChangeText={(e) => setData({ ...data, password: e })}
@@ -121,7 +132,14 @@ const Signup = () => {
             ]}
             onPress={() => handleUserTypeChange("buyer")}
           >
-            <Text style={styles.userTypeButtonText}>Buyer</Text>
+            <Text
+              style={[
+                styles.userTypeButtonText,
+                data.userType === "buyer" && styles.selectedUserType,
+              ]}
+            >
+              Buyer
+            </Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[
@@ -130,7 +148,14 @@ const Signup = () => {
             ]}
             onPress={() => handleUserTypeChange("seller")}
           >
-            <Text style={styles.userTypeButtonText}>Seller</Text>
+            <Text
+              style={[
+                styles.userTypeButtonText,
+                data.userType === "seller" && styles.selectedUserType,
+              ]}
+            >
+              Seller
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -138,36 +163,38 @@ const Signup = () => {
           <Text style={styles.buttonText}>Sign Up</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: Colors.main_white,
   },
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
+    marginTop: 20,
   },
   input: {
     width: "90%",
     padding: 10,
     borderWidth: 1,
     borderRadius: 8,
-    borderColor: Colors.light_grey_border,
+    borderColor: Colors.black_txt,
     fontSize: 16,
     marginBottom: 10,
+    color: Colors.black_txt,
   },
   button: {
     width: "90%",
     height: 40,
     borderRadius: 8,
-    backgroundColor: Colors.main_blue,
+    backgroundColor: Colors.yellow,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 10,
+    marginVertical: 20,
   },
   buttonText: {
     color: "white",
@@ -185,13 +212,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 10,
     borderWidth: 1,
-    borderColor: Colors.light_grey_border,
+    borderColor: Colors.black_txt,
   },
   userTypeButtonText: {
     fontSize: 16,
+    color: Colors.black_txt,
   },
   selectedUserType: {
-    borderColor: Colors.main_blue,
+    borderColor: Colors.yellow,
+    color: Colors.yellow,
   },
 });
 
