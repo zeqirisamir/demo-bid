@@ -3,11 +3,13 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import BottomTabNavigator from "./BottomTabNav";
 import { RootState } from "../redux/store";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import AuthStack from "./AuthStack";
 import DashboardStack from "./DashboardStack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import SplashScreen from "../components/SplashScreen/SplashScreen";
+import { setCurrentValue, setUser } from "../redux/auth/AuthReducer";
+import { UserData } from "../service/types";
 
 const Stack = createStackNavigator();
 
@@ -47,41 +49,31 @@ const MainApp = () => {
 
 const AuthNavigator = () => {
   const user = useSelector((state: RootState) => state.authReducer.user);
-  const [hasToken, setHasToken] = useState(false);
-  const userType = useSelector(
-    (state: RootState) => state.authReducer.userType
-  );
+  const dispatch = useDispatch();
 
-  const getTokenFromStorage = async () => {
-    try {
-      const token = await AsyncStorage.getItem("userData");
-      return token;
-    } catch (error) {
-      console.error("Error retrieving token from AsyncStorage:", error);
-      return null;
-    }
-  };
-
-  const checkAuthentication = async () => {
-    const token = await getTokenFromStorage();
-    if (token) {
-      setHasToken(true);
-    } else {
-      setHasToken(false);
-    }
-  };
   useEffect(() => {
-    checkAuthentication();
+    const getPreviousEmails = async () => {
+      const previousUserData = await AsyncStorage.getItem("userData");
+      console.log("prev data", previousUserData);
+
+      if (previousUserData) {
+        const userData: UserData = JSON.parse(previousUserData) as UserData;
+        dispatch(setUser(userData));
+        dispatch(setCurrentValue(userData?.currentValue));
+      }
+    };
+    getPreviousEmails();
   }, []);
+
   return (
     <Stack.Navigator>
-      {user?.data?._id && userType === "buyer" ? (
+      {user?._id && user?.userType === "buyer" ? (
         <Stack.Screen
           name="Main"
           component={BottomTabNavigator}
           options={{ headerShown: false }}
         />
-      ) : user?.data?._id && userType === "seller" ? (
+      ) : user?._id && user?.userType === "seller" ? (
         <Stack.Screen
           name="DashboardStack"
           component={DashboardStack}

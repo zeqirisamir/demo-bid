@@ -1,4 +1,5 @@
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { UserData } from "../service/types";
 
 export type AuthStackParams = {
   SignIn: undefined;
@@ -11,6 +12,7 @@ export type AuthStackParams = {
 };
 export type DashboardStackParams = {
   DashboardScreen: undefined;
+  CreatePostScreen: undefined;
 };
 export type HomeParams = {
   Home: undefined;
@@ -18,10 +20,24 @@ export type HomeParams = {
   PostDetails: { product: Product };
   Profile: undefined;
   ProfileMenu: undefined;
+  WalletScreen: undefined;
+  MyBids: undefined;
 };
+export interface SignInResData {
+  data: SignInRes;
+}
 
+export interface SignInRes {
+  status: number;
+  data: UserData;
+}
+export interface BidTypes {
+  user: UserData;
+  post: Product;
+  amount: number;
+}
 export interface Product {
-  like: any;
+  post: Product;
   _id: number;
   description: string;
   duration: string;
@@ -30,6 +46,7 @@ export interface Product {
   startingBid: number;
   userName?: string;
   category?: string;
+  createdAt?: string;
 }
 export type AuthNavigationProp = NativeStackScreenProps<
   AuthStackParams,

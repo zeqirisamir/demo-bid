@@ -100,7 +100,7 @@ export default CustomButton;
 const styles = StyleSheet.create({
   button: {
     height: 40,
-    minWidth: 64,
+    minWidth: 54,
     borderRadius: 4,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   text: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
     color: "white",
     textAlign: "center",
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2196F3",
   },
   textButton: {
-    backgroundColor: "transparent",
+    backgroundColor: Colors.main_white,
   },
   outlineButton: {
     backgroundColor: "transparent",

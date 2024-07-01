@@ -1,14 +1,7 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Alert, StyleSheet, Text, View, ScrollView } from "react-native";
 import React, { useEffect, useState } from "react";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import Animated, {
-  FadeIn,
-  SharedTransition,
-  withTiming,
-} from "react-native-reanimated";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { PostDetailsNavigationProp } from "../../navigaton/Types";
 import IconButton from "../../components/shared/IconButton";
 import ProductDetailHeader from "../../components/products/productDetail/ProductDetailHeader";
@@ -18,27 +11,30 @@ import { SCREEN_HEIGHT } from "../../constants/Screen";
 import {
   createBid,
   getAllPreviousBidsForPost,
-  getAllPersonalBiddings,
-  likePost,
-  unlikePost,
-  updatePost,
 } from "../../actions/posts/postsActions";
-import { getUserToken } from "../../data/constants";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { AllBidsTypes } from "../../service/types";
 import MainModal from "../../components/shared/MainModal";
-import { ScrollView } from "react-native-gesture-handler";
+import { setCurrentValue } from "../../redux/auth/AuthReducer";
+import Header from "../../components/header/Header";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { updateValue } from "../../actions/auth/authActions";
 
 const ProductDetail = ({ navigation, route }: PostDetailsNavigationProp) => {
   const { product } = route.params;
+  const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.authReducer.user);
-
-  const [liked, setLiked] = useState(product.like);
+  const currentValue = useSelector(
+    (state: RootState) => state.authReducer.currentValue
+  );
   const [currentPrice, setCurrentPrice] = useState(product.startingBid);
   const [previousBids, setPreviousBids] = useState<AllBidsTypes[]>([]);
-  const lastAmount = previousBids[previousBids?.length - 1]?.amount;
+  const lastAmount =
+    previousBids[previousBids?.length - 1]?.amount || currentPrice;
   const [isOpenModal, setIsOpenModal] = useState(false);
+
+  console.log("usre from post details", user);
 
   useEffect(() => {
     const fetchPreviousBids = async () => {
@@ -53,117 +49,75 @@ const ProductDetail = ({ navigation, route }: PostDetailsNavigationProp) => {
       }
     };
     fetchPreviousBids();
-  }, [product]);
-
-  useEffect(() => {
-    const handlePersonalBids = async () => {
-      try {
-        const newPrice = currentPrice + 50; // Increase the price by 50 for bidding
-        const newProduct = { ...product, startingBid: newPrice };
-        console.log("product :::: ", product);
-        console.log("updated :::: ", newProduct);
-
-        let data = {
-          userId: user?.data?._id,
-          postId: product?._id,
-          amount: newPrice,
-        };
-
-        getAllPersonalBiddings(data.userId).then((res) => {
-          //console.log("testing all bids::::", res);
-        });
-
-        // updatePost(product._id, newProduct).then((res) => {
-        //   console.log(res);
-        //   setCurrentPrice(newPrice);
-        // });
-      } catch (error) {
-        console.error("Error bidding:", error);
-      }
-    };
-    handlePersonalBids();
-  }, [product]);
+  }, [product, currentValue]);
 
   const handleBid = async () => {
     try {
-      const newPrice = lastAmount + 50; // Increase the price by 50 for bidding
-      const newProduct = { ...product, startingBid: newPrice };
-
-      let data = {
-        userId: user?.data?._id,
-        postId: product?._id,
-        amount: newPrice,
-      };
-      // console.log("testing bidding::::", data);
-      createBid(data).then((res) => {
-        console.log("testing bidding::::", res?.data);
-      });
-
-      // updatePost(product._id, newProduct).then((res) => {
-      //   console.log(res);
-      //   setCurrentPrice(newPrice);
-      // });
+      const newPrice = Number(lastAmount) + 50;
+      if (newPrice > currentValue) {
+        Alert.alert("You dont have enogh money to bid o this product");
+      } else {
+        let data = {
+          userId: user?._id,
+          postId: product?._id,
+          amount: newPrice,
+        };
+        // console.log("testing bidding::::", data);
+        createBid(data).then((res) => {
+          let finalOffer = currentValue - newPrice;
+          console.log("created bid::::", res?.data);
+          dispatch(setCurrentValue(finalOffer));
+          handleDone(finalOffer);
+        });
+      }
     } catch (error) {
       console.error("Error bidding:", error);
     }
   };
 
-  const handleLike = async () => {
-    console.log("clicking", product._id);
-    const authToken = await getUserToken();
+  const handleDone = async (value: number) => {
+    const token = await AsyncStorage.getItem("userToken");
+    const data = {
+      userId: user?._id,
+      currentValue: value,
+    };
     try {
-      if (liked) {
-        await unlikePost(product?._id, authToken);
-        setLiked(false);
-      } else {
-        await likePost(product?._id, authToken);
-        setLiked(true);
+      if (token) {
+        const res = await updateValue(data, token);
+        console.log("update value", res);
+
+        if (res.res.status === 200) {
+          dispatch(setCurrentValue(Number(value)));
+        }
       }
     } catch (error) {
-      console.error("Error liking/unliking post:", error);
+      console.log(error);
     }
   };
-
-  // const handleLikePosts = async (id: number) => {
-  //   try {
-  //     const res = await likePost(id);
-  //     console.log("deleting :::", res);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
   return (
-    <SafeAreaView style={styles.container}>
+    <>
+      <Header
+        title={"Details"}
+        showBackBtn={true}
+        containerStyle={{ borderBottomWidth: 0 }}
+        leftButtonText="Back"
+        showCancelBtn
+        handleBackBtn={() => navigation.goBack()}
+      />
       <ScrollView>
         <Animated.View
           entering={FadeIn.delay(500)}
           style={[styles.iconButtonContainer, styles.backButton, { top: 0 }]}
         >
-          <IconButton
+          {/* <IconButton
             testID="productDetailBackButton"
             icon="chevron-left"
             onPress={() => navigation.goBack()}
             iconColor="black"
             size="big"
             style={{ backgroundColor: Colors.main_white }}
-          />
+          /> */}
 
-          {/* <Animated.View
-        entering={FadeIn.delay(500)}
-        style={[
-          styles.iconButtonContainer,
-          styles.heartButton,
-          { top: insets.top + 20 },
-        ]}
-      >
-        <IconButton
-          onPress={handleLike}
-          icon="heart"
-          iconFamily="MaterialCommunityIcons"
-          iconColor={liked ? "red" : "grey"}
-          style={{ backgroundColor: "#FFFFFF" }}
-        />
-      </Animated.View> */}
           <Animated.Image
             sharedTransitionTag={`image_${product._id}`}
             source={{ uri: `data:image;base64,${product?.imgSrc}` }}
@@ -174,15 +128,10 @@ const ProductDetail = ({ navigation, route }: PostDetailsNavigationProp) => {
           <ProductDetailHeader furniture={product} />
           <View style={styles.line} />
           <Text style={styles.description}>{product.description}</Text>
-          <View style={styles.colorAndQuantity}>
-            {/* <ColorPicker /> */}
-
-            {/* <QuantitySelector amount={amount} setAmount={setAmount} /> */}
-          </View>
 
           <View style={styles.priceContainer}>
             <View>
-              <Text style={styles.price}>Starting Price: ${currentPrice}</Text>
+              <Text style={styles.price}>Starting Price: €{currentPrice}</Text>
               <View style={styles.line} />
 
               {previousBids?.length === 0 ? (
@@ -193,17 +142,16 @@ const ProductDetail = ({ navigation, route }: PostDetailsNavigationProp) => {
                     Current bid:
                   </Text>
                   <Text style={[styles.description, { fontWeight: "600" }]}>
-                    {lastAmount}$
+                    €{lastAmount}
                   </Text>
                 </View>
               )}
 
               <Text style={styles.nextBid}>
-                Next bid will be:{" "}
+                Next bid will be: €
                 {previousBids?.length === 0
                   ? currentPrice + 50
-                  : lastAmount + 50}
-                $
+                  : Number(lastAmount) + 50}
               </Text>
             </View>
             <View>
@@ -216,16 +164,16 @@ const ProductDetail = ({ navigation, route }: PostDetailsNavigationProp) => {
             </View>
           </View>
         </View>
-        <MainModal
-          visible={isOpenModal}
-          onClose={() => setIsOpenModal(false)}
-          onPress={() => {
-            handleBid(), setIsOpenModal(false);
-          }}
-          title="Are you sure you want to place this bid?"
-        />
       </ScrollView>
-    </SafeAreaView>
+      <MainModal
+        visible={isOpenModal}
+        onClose={() => setIsOpenModal(false)}
+        onPress={() => {
+          handleBid(), setIsOpenModal(false);
+        }}
+        title="Are you sure you want to place this bid?"
+      />
+    </>
   );
 };
 
@@ -243,7 +191,6 @@ const styles = StyleSheet.create({
     height: SCREEN_HEIGHT / 2,
     resizeMode: "cover",
     zIndex: -1,
-    margin: 5,
     borderRadius: 4,
   },
   description: {

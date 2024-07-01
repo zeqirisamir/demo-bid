@@ -1,7 +1,5 @@
-import axios from "axios";
-import { setUser } from "../../redux/auth/AuthReducer";
-import { setPosts } from "../../redux/posts/postsReducer";
 import * as api from "../../api/index";
+import { BidTypes, Product } from "../../navigaton/Types";
 
 export const getPosts = async () => {
   try {
@@ -15,7 +13,7 @@ export const getPosts = async () => {
   }
 };
 
-export const createPost = async (data: any) => {
+export const createPost = async (data: Product) => {
   try {
     const res = await api.createPost(data);
     return res;
@@ -24,7 +22,18 @@ export const createPost = async (data: any) => {
     console.log("from api", error);
   }
 };
-export const createBid = async (data: any) => {
+
+export const getUserPost = async (userId: Product) => {
+  try {
+    const res = await api.getUserPosts(userId);
+    return res;
+  } catch (error: any) {
+    console.log(error.message);
+    console.log("from api", error);
+  }
+};
+
+export const createBid = async (data: BidTypes) => {
   try {
     const res = await api.createBidding(data);
     return res;
@@ -68,26 +77,6 @@ export const updatePost = async (id: number, data: any) => {
 export const deletePost = async (data: any) => {
   try {
     const res = await api.deletePost(data);
-    return res;
-  } catch (error: any) {
-    console.log(error.message);
-    console.log("from api", error);
-  }
-};
-
-export const likePost = async (data: any, authToken: any) => {
-  try {
-    const res = await api.likePost(data, authToken);
-    return res;
-  } catch (error: any) {
-    console.log(error.message);
-    console.log("from api", error);
-  }
-};
-
-export const unlikePost = async (data: any, authToken: any) => {
-  try {
-    const res = await api.unlikePost(data, authToken);
     return res;
   } catch (error: any) {
     console.log(error.message);

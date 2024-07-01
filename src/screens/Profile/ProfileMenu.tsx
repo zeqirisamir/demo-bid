@@ -43,8 +43,11 @@ const ProfileMenu = () => {
         >
           <Text style={styles.buttonText}>Profile </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Coins Summary</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("WalletScreen")}
+        >
+          <Text style={styles.buttonText}>Wallet</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -79,9 +82,8 @@ const styles = StyleSheet.create({
   },
   button: {
     width: "100%",
-    backgroundColor: Colors.dark_grey,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 20,
     borderRadius: 8,
     elevation: 2,
   },

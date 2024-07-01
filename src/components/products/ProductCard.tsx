@@ -10,7 +10,6 @@ import {
 import CustomButton from "../shared/CustomButton";
 import { Colors } from "../../theme/Colors";
 import { Product } from "../../navigaton/Types";
-import { likePost } from "../../actions/posts/postsActions";
 
 export type ProductProps = {
   product: Product;
@@ -44,24 +43,21 @@ const ProductCard = ({
         />
       </Pressable>
       <Pressable onPress={onPressCard} style={styles.content}>
-        <View testID={`productCard${product?._id}`}>
+        <View testID={`productCard${product?._id}`} style={styles.descCont}>
           <Text style={styles.title}>{product?.productName}</Text>
-          {/* <Text style={styles.company}>By {product.}</Text> */}
-          <Text style={styles.description}>{product?.description}</Text>
+
+          {/* <Text numberOfLines={2} style={styles.description}>
+            {product?.description}
+          </Text> */}
         </View>
         <View style={styles.footer}>
           <Text style={styles.price}>${product?.startingBid}</Text>
-          <CustomButton
+          {/* <CustomButton
             onPress={onPressCard}
             title="Details"
             style={styles.button}
-            roundness={"full"}
-          />
-          {/* <CustomButton
-            onPress={() => onPress2Card(product?._id)}
-            title="delete"
-            style={styles.button}
-            roundness={"full"}
+            roundness={"medium"}
+            variant="text"
           /> */}
         </View>
       </Pressable>
@@ -71,28 +67,38 @@ const ProductCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: "row",
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 8,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    borderBottomWidth: 0.2,
+    flexDirection: "column",
+    borderRadius: 4,
+    //padding: 10,
+    marginVertical: 5,
+    // shadowColor: "#000",
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 2,
+    // },
+    // shadowOpacity: 0.2,
+    // shadowRadius: 3.84,
+    //borderBottomWidth: 0.2,
+    width: 175,
+    alignContent: "center",
+    //borderLeftWidth: 0.5,
+    borderColor: Colors.dark_grey_border,
+    marginLeft: 10,
   },
   image: {
-    resizeMode: "stretch",
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    marginRight: 16,
+    resizeMode: "cover",
+    width: 175,
+    height: 220,
+    borderRadius: 4,
   },
   content: {
     flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 2,
+  },
+  descCont: {
+    height: 30,
+    justifyContent: "flex-start",
   },
   title: {
     fontSize: 18,
@@ -115,8 +121,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    flexWrap: "nowrap",
+    justifyContent: "space-between",
   },
   price: {
     fontSize: 16,
@@ -124,9 +131,7 @@ const styles = StyleSheet.create({
     color: Colors.yellow,
   },
   button: {
-    backgroundColor: Colors.main_white,
-    height: 34,
-    marginLeft: 16,
+    marginRight: 10,
     paddingHorizontal: 16,
   },
 });

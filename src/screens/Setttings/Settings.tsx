@@ -3,13 +3,10 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useDispatch } from "react-redux";
-import { logout } from "../../actions/auth/authActions";
 import Header from "../../components/header/Header";
 import { Colors } from "../../theme/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { HomeNavigationProp } from "../../navigaton/Types";
-import { setUser, setUserType } from "../../redux/auth/AuthReducer";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { handleLogout } from "../../data/constants";
 
 const Settings = () => {

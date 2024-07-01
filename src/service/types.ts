@@ -14,6 +14,7 @@ export interface UserData {
   password: string;
   userType: string;
   profilePic: string;
+  currentValue?: string;
 }
 
 export interface EditPhotoButtonProps {

@@ -11,6 +11,7 @@ import MyBids from "../screens/MyBids/MyBids";
 import { View } from "react-native";
 import Profile from "../screens/Profile/Profile";
 import ProfileMenu from "../screens/Profile/ProfileMenu";
+import WalletScreen from "../screens/Profile/WalletScreen";
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator<HomeParams>();
@@ -24,6 +25,8 @@ const HomeStackScreen = () => (
     <HomeStack.Screen name="Settings" component={Settings} />
     <HomeStack.Screen name="Profile" component={Profile} />
     <HomeStack.Screen name="ProfileMenu" component={ProfileMenu} />
+    <HomeStack.Screen name="WalletScreen" component={WalletScreen} />
+    <HomeStack.Screen name="MyBids" component={MyBids} />
   </HomeStack.Navigator>
 );
 // const BidsStackSceen = () => (

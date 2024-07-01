@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { DashboardNavigationProp } from "../../navigaton/Types";
 import Header from "../../components/header/Header";
-import { logout } from "../../actions/auth/authActions";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
 import { Colors } from "../../theme/Colors";
@@ -22,7 +21,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
 import { handleLogout } from "../../data/constants";
 
-const DashboardScreen = () => {
+const CreatePostScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<DashboardNavigationProp["navigation"]>();
   const user = useSelector((state: RootState) => state.authReducer.user);
@@ -37,7 +36,6 @@ const DashboardScreen = () => {
 
   const [showPicker, setShowPicker] = useState(false);
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
-  const [auctionDuration, setAuctionDuration] = useState("1");
   const [image, setImage] = useState({
     base64: "",
     url: "",
@@ -79,17 +77,18 @@ const DashboardScreen = () => {
     return resizedUri;
   };
   const handleCreatePost = async () => {
-    console.log(data);
-    console.log(image);
+    const createdAt = new Date().toISOString();
     try {
       const res = await createPost({
+        userId: user?._id,
         productName: data?.productName,
         description: data?.description,
         startingBid: data?.startingBid,
         duration: data?.duration,
         imgSrc: image?.base64,
-        userName: user?.data?.firstName,
+        userName: user?.firstName,
         category: data?.category,
+        createdAt: createdAt,
       });
       console.log(user?.data);
       if (res?.status === 201) {
@@ -130,14 +129,15 @@ const DashboardScreen = () => {
       <Header
         title={"Dashboard"}
         //@ts-ignore
-        handleBackBtn={() => handleLogout(dispatch)}
+        //handleBackBtn={() => handleLogout(dispatch)}
         containerStyle={{
           borderBottomWidth: 0,
         }}
         showCancelBtn={true}
         handleRightBtn={handleCreatePost}
+        handleBackBtn={() => navigation.navigate("DashboardScreen")}
         rightButtonText="Create"
-        leftButtonText="Log out"
+        leftButtonText="back"
       />
 
       <View style={styles.container}>
@@ -224,7 +224,7 @@ const DashboardScreen = () => {
         </TouchableOpacity>
         {image && (
           <Image
-            source={{ uri: image.url }}
+            source={{ uri: image?.url }}
             style={{ width: 150, height: 150, borderRadius: 10 }}
           />
         )}
@@ -325,4 +325,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DashboardScreen;
+export default CreatePostScreen;

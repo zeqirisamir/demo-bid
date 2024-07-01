@@ -1,18 +1,47 @@
 import axios from "axios";
 import { setUser } from "../../redux/auth/AuthReducer";
+import {
+  login,
+  signUpBuyer,
+  signUpSeller,
+  updateCurentValue,
+  updateUserInfo,
+} from "../../api";
 
-const apiUrl = "http://localhost:5000/api/auth";
 export const signIn = async (data: any) => {
   let res: any;
   let err: any;
-  const url = `${apiUrl}/sign_in`;
   try {
-    res = await axios.post(url, data);
+    res = await login(data);
     console.log("from inside login", res);
   } catch (error) {
     err = error;
   }
-  console.log("from auth ", url);
+
+  return { res, err };
+};
+
+export const updateValue = async (data: any, token: string) => {
+  let res: any;
+  let err: any;
+  try {
+    res = await updateCurentValue(data, token);
+    console.log("from inside update value", res);
+  } catch (error) {
+    err = error;
+  }
+
+  return { res, err };
+};
+export const updateUser = async (data: any, token: string) => {
+  let res: any;
+  let err: any;
+  try {
+    res = await updateUserInfo(data, token);
+    console.log("from inside update user", res);
+  } catch (error) {
+    err = error;
+  }
 
   return { res, err };
 };
@@ -22,16 +51,14 @@ export const signUp = async (data: any, isBuyer: boolean) => {
   let err: any;
   if (isBuyer) {
     try {
-      const url = `${apiUrl}/sign_up_buyer`;
-      res = await axios.post(url, data);
+      res = await signUpBuyer(data);
     } catch (error: any) {
       err = error;
-      console.log("signup error:", error);
+      console.log("signup signup:", error);
     }
   } else {
     try {
-      const url = `${apiUrl}/sign_up_seller`;
-      res = await axios.post(url, data);
+      res = await signUpSeller(data);
     } catch (error: any) {
       err = error;
       console.log("signup error:", error);
@@ -39,10 +66,4 @@ export const signUp = async (data: any, isBuyer: boolean) => {
   }
 
   return { res, err };
-};
-
-export const logout = () => {
-  return async (dispatch: any) => {
-    dispatch(setUser({}));
-  };
 };

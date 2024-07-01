@@ -13,6 +13,7 @@ import ProductCard from "../../components/products/ProductCard";
 import FilterChips from "../../components/products/FilterChips";
 import { SCREEN_HEIGHT } from "../../constants/Screen";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -21,30 +22,35 @@ const Home = () => {
   const insets = useSafeAreaInsets();
   const [filteredPosts, setFilteredPosts] = useState<Product[]>(posts);
 
-  useEffect(() => {
-    handleGetPosts();
-    onSelectTag(null);
-  }, []);
-
   const handleGetPosts = async () => {
     try {
       const res = await getPosts();
+      console.log("post data", res);
+
       dispatch(setPosts(res.data));
+      setFilteredPosts(res?.data);
       //console.log("data", res.data);
     } catch (error) {
       console.log(error);
     }
   };
+  // const getTokenFromStorage = async () => {
+  //   try {
+  //     const previousUserData = await AsyncStorage.getItem("userData");
+  //     if (previousUserData) {
+  //       console.log("previos data", previousUserData);
 
-  const handledeletePosts = async (id: number) => {
-    try {
-      const res = await deletePost(id);
-      console.log("deleting :::", res);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
+  //       const userData = JSON.parse(previousUserData);
+  //       console.log(userData);
+  //     }
+  //     const token = await AsyncStorage.getItem("userData");
+  //     return token;
+  //   } catch (error) {
+  //     console.error("Error retrieving token from AsyncStorage:", error);
+  //     return null;
+  //   }
+  // };
+  // getTokenFromStorage();
   const handleCardPress = (product: Product) => {
     navigation.navigate("PostDetails", {
       product: product,
@@ -64,7 +70,13 @@ const Home = () => {
     },
     [posts]
   );
+  useEffect(() => {
+    handleGetPosts();
+    console.log("filtered", filteredPosts);
+    console.log("posts", posts);
 
+    //onSelectTag(null);
+  }, []);
   return (
     <View style={styles.screen}>
       <Header
@@ -73,21 +85,22 @@ const Home = () => {
         containerStyle={{ borderBottomWidth: 0 }}
         showSummary
         showLeftIcon
+        showSettingsBtn
         handleBackBtn={() => navigation.navigate("ProfileMenu")}
-        handleRightBtn={() => navigation.navigate("Settings")}
+        handleRightBtn={() => navigation.navigate("MyBids")}
       />
 
-      <Animated.View style={[styles.container, { paddingTop: insets.bottom }]}>
+      <Animated.View style={[styles.container, { marginTop: insets.bottom }]}>
+        <FilterChips onSelectTag={onSelectTag} />
         <ScrollView contentContainerStyle={styles.content}>
-          <FilterChips onSelectTag={onSelectTag} />
-          {Array.isArray(filteredPosts) &&
+          {filteredPosts.length > 0 &&
             filteredPosts.map((item: Product, key: any) => (
               <ProductCard
                 tag={`image_${item?._id}`}
                 onPressCard={() => handleCardPress(item)}
                 key={`product-${key}`}
                 product={item}
-                onPress2Card={(id) => handledeletePosts(id)}
+                onPress2Card={(id) => {}}
               />
             ))}
           {Array.isArray(filteredPosts) && filteredPosts.length === 0 && (
@@ -114,6 +127,11 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 5,
     paddingBottom: SCREEN_HEIGHT / 4,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    rowGap: 10,
+    justifyContent: "flex-start",
+    paddingRight: 10,
   },
   noPostsText: {
     textAlign: "center",

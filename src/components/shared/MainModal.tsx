@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useRef } from "react";
 import {
   View,
   TouchableOpacity,
@@ -11,6 +11,7 @@ import {
 import Icon from "../header/Icon";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import { Colors } from "../../theme/Colors";
+import LottieView from "lottie-react-native";
 
 interface MainModalProps {
   visible: boolean;
@@ -35,6 +36,7 @@ const MainModal = ({
   yesText,
   cancelText,
 }: MainModalProps) => {
+  const animation = useRef(null);
   return (
     <Modal animationType="slide" visible={visible} transparent={true}>
       <TouchableWithoutFeedback onPress={onClose}>
@@ -44,13 +46,6 @@ const MainModal = ({
               <AntDesign name="close" size={25} color="#666" />
             </TouchableOpacity>
 
-            {/* <View style={{marginTop: 20}}>
-          {iconName ? (
-            <Icon name={iconName} size={60} />
-          ) : (
-            <Icon name="warning_triangle" size={80} />
-          )}
-        </View> */}
             <Text style={styles.modalTitle}>{title}</Text>
 
             <Text style={styles.modalText}>{subtitle}</Text>
@@ -83,6 +78,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  animationContainer: {
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
   },
   modalContent: {
     backgroundColor: Colors.white_grey,

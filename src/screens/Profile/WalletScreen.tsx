@@ -1,56 +1,53 @@
-// Profile.tsx
-
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { updateUser } from "../../actions/auth/authActions";
-import Header from "../../components/header/Header";
 import { Colors } from "../../theme/Colors";
 import { useNavigation } from "@react-navigation/native";
 import { HomeNavigationProp } from "../../navigaton/Types";
 import { RootState } from "../../redux/store";
-import { EditPhotoButton } from "../../components/editPhoto/EditPhoto";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import { setCurrentValue } from "../../redux/auth/AuthReducer";
+import { updateValue } from "../../actions/auth/authActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUserToken } from "../../data/constants";
 
-const Profile = () => {
+const WalletScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation<HomeNavigationProp["navigation"]>();
   const user = useSelector((state: RootState) => state.authReducer.user);
-  const data = user;
 
-  const [userInfo, setuserInfo] = useState({
-    name: "",
-    lastName: "",
-    email: "",
-    password: "",
-  });
+  const userValue = useSelector(
+    (state: RootState) => state.authReducer.currentValue
+  );
 
-  // const token = getUserToken();
+  const [value, setValue] = useState("0");
 
-  // console.log("token", token);
+  console.log("userData", user.data);
 
-  const handleGetPosts = async () => {
+  const handleDone = async () => {
     const token = await AsyncStorage.getItem("userToken");
+    const data = {
+      userId: user?._id,
+      currentValue: value,
+    };
+    try {
+      if (token) {
+        const res = await updateValue(data, token);
+        console.log("update value", res);
 
-    if (token) {
-      const data = {
-        firstName: "Test",
-        lastName: "Test",
-        email: "Something",
-        password: "Something",
-      };
-      try {
-        const res = await updateUser(data, token);
-
-        console.log("data", res);
-      } catch (error) {
-        console.log(error);
+        if (res.res.status === 200) {
+          dispatch(setCurrentValue(Number(value)));
+        }
       }
+    } catch (error) {
+      console.log(error);
     }
   };
-  handleGetPosts();
   return (
     <View style={styles.screen}>
       <View style={{ height: 100 }}>
@@ -61,16 +58,22 @@ const Profile = () => {
           <AntDesign name="left" size={25} color="#666" />
         </TouchableOpacity>
       </View>
-      <View style={styles.nameContainer}>
-        <AntDesign name="user" size={25} color="#666" />
-        <Text style={styles.nameText}>
-          Name: {data?.firstName} {data?.lastName}
-        </Text>
+      <View style={styles.container}>
+        <Text>Current amount: {userValue}</Text>
       </View>
 
-      <View style={styles.nameContainer}>
-        <AntDesign name="contacts" size={25} color="#666" />
-        <Text style={styles.nameText}>Email: {data?.email}</Text>
+      <View style={styles.container}>
+        <Text> Import money to the app</Text>
+        <TextInput
+          style={styles.input}
+          value={value}
+          placeholder={"Search"}
+          onChangeText={setValue}
+          placeholderTextColor="#999"
+        />
+        <TouchableOpacity style={styles.done} onPress={handleDone}>
+          <Text>Done</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -82,12 +85,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.main_white,
   },
   container: {
-    flex: 1,
-    justifyContent: "flex-start",
-
+    flexDirection: "row",
     paddingVertical: 20,
-    paddingHorizontal: 20,
     backgroundColor: Colors.main_white,
+    alignItems: "center",
   },
   nameContainer: {
     display: "flex",
@@ -96,18 +97,15 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 10,
     width: "100%",
-    borderWidth: 1,
-    borderColor: Colors.yellow,
-    borderRadius: 4,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingLeft: 15,
   },
   nameText: {
     color: "black",
     fontSize: 16,
     fontWeight: "500",
+    borderWidth: 1,
+    borderColor: Colors.yellow,
     padding: 10,
+    borderRadius: 4,
     width: "100%",
   },
   button: {
@@ -129,6 +127,20 @@ const styles = StyleSheet.create({
     padding: 10,
     left: 5,
   },
+  input: {
+    marginLeft: 10,
+    fontSize: 20,
+    color: "#333",
+    marginHorizontal: 20,
+    borderWidth: 0.5,
+    borderColor: Colors.grey_text,
+    padding: 10,
+  },
+  done: {
+    padding: 10,
+    backgroundColor: Colors.yellow,
+    borderRadius: 10,
+  },
 });
 
-export default Profile;
+export default WalletScreen;

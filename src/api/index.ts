@@ -1,6 +1,28 @@
 import axios from "axios";
 
 const url = "http://localhost:5000/api/posts";
+const loginUrl = "http://localhost:5000/api/auth";
+
+export const login = (data: any) => axios.post(`${loginUrl}/sign_in`, data);
+export const signUpBuyer = (data: any) =>
+  axios.post(`${loginUrl}/sign_up_buyer`, data);
+export const signUpSeller = (data: any) =>
+  axios.post(`${loginUrl}/sign_up_seller`, data);
+
+export const updateUserInfo = (data: any, token: string) =>
+  axios.put(`${loginUrl}/update_user`, data, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-auth-token": token,
+    },
+  });
+export const updateCurentValue = (data: any, token: string) =>
+  axios.put(`${loginUrl}/update_user_value`, data, {
+    headers: {
+      "Content-Type": "application/json",
+      "x-auth-token": token,
+    },
+  });
 
 export const fetchPosts = () => axios.get(`${url}/get_all_posts`);
 
@@ -8,6 +30,9 @@ export const fetchPost = (id: any) => axios.get(`${url}/${id}`);
 
 export const createPost = (newPost: any) =>
   axios.post(`${url}/create_post`, newPost);
+
+export const getUserPosts = (userId: any) =>
+  axios.get(`${url}/user/${userId}/posts`);
 
 export const updatePost = (id: any, updatedPost: any) =>
   axios.put(`${url}/${id}`, updatedPost);
@@ -21,17 +46,3 @@ export const getPostSpecificBiddings = (postId: any) =>
   axios.get(`${url}/post/${postId}/bids`);
 
 export const deletePost = (id: any) => axios.delete(`${url}/${id}`);
-
-export const likePost = (postId: any, authToken: string) =>
-  axios.post(`${url}/${postId}/like`, null, {
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  });
-
-export const unlikePost = (postId: any, authToken: string) =>
-  axios.post(`${url}/${postId}/unlike`, null, {
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-    },
-  });

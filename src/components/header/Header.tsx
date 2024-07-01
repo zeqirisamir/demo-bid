@@ -12,6 +12,9 @@ import theme from "../../theme";
 import { Colors } from "../../theme/Colors";
 import { MoneySummary } from "../MoneySummary/MoneySummary";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import { LinearGradient } from "expo-linear-gradient";
 
 interface HeaderProps {
   darkMode?: boolean;
@@ -43,6 +46,15 @@ const Header = ({
   showLeftIcon,
 }: HeaderProps) => {
   const translateY = useRef(new Animated.Value(-100)).current;
+  const linearGradientBorder = [
+    Colors.yellow,
+    Colors.yellow,
+    Colors.main_white,
+  ];
+  const userValue = useSelector(
+    (state: RootState) => state.authReducer.currentValue
+  );
+  const userData = useSelector((state: RootState) => state.authReducer.user);
 
   useEffect(() => {
     Animated.timing(translateY, {
@@ -75,40 +87,45 @@ const Header = ({
           <Text style={styles.resumeText}>{rightButtonText}</Text>
         )}
         {showSettingsBtn && (
-          <Text style={styles.resumeText}> Settings</Text>
+          // <Text style={styles.resumeText}> Settings</Text>
 
-          // <Icon size={23} color={theme.Colors.black_txt} name="back" />
+          <AntDesign name="menu-unfold" size={25} color="#666" />
         )}
       </TouchableOpacity>
     ) : null;
 
   return (
     <Animated.View style={[styles.main, { transform: [{ translateY }] }]}>
-      <StatusBar barStyle={darkMode ? "light-content" : "dark-content"} />
-      <View
-        style={[
-          styles.headerContainer,
-          darkMode ? styles.headerContainerDark : styles.headerContainerLight,
-          containerStyle,
-        ]}
+      <LinearGradient
+        colors={linearGradientBorder}
+        style={styles.containerLinearGradient}
       >
-        {backBtn()}
+        <StatusBar barStyle={darkMode ? "light-content" : "dark-content"} />
+        <View
+          style={[
+            styles.headerContainer,
+            darkMode ? styles.headerContainerDark : styles.headerContainerLight,
+            containerStyle,
+          ]}
+        >
+          {backBtn()}
 
-        {title && (
-          <Text style={[styles.titleText, darkMode && styles.titleTextDark]}>
-            {title}
-          </Text>
+          {title && (
+            <Text style={[styles.titleText, darkMode && styles.titleTextDark]}>
+              {title}
+            </Text>
+          )}
+
+          {content()}
+        </View>
+        {showSummary && (
+          <MoneySummary
+            mode="light"
+            linearGradientBorder={["#FEDA2C", "#FDAC16"]}
+            coins={userValue}
+          />
         )}
-
-        {content()}
-      </View>
-      {showSummary && (
-        <MoneySummary
-          mode="light"
-          linearGradientBorder={["#FEDA2C", "#FDAC16"]}
-          coins={122}
-        />
-      )}
+      </LinearGradient>
     </Animated.View>
   );
 };
@@ -116,20 +133,19 @@ const Header = ({
 const styles = StyleSheet.create({
   main: {
     flexDirection: "column",
-    backgroundColor: Colors.yellow,
     display: "flex",
     alignContent: "center",
     justifyContent: "center",
     alignItems: "center",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    // shadowColor: "#000",
+    // shadowOffset: {
+    //   width: 0,
+    //   height: 3,
+    // },
+    // shadowOpacity: 0.25,
+    // shadowRadius: 3.84,
   },
   headerContainer: {
     paddingHorizontal: 15,
@@ -158,7 +174,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   resumeText: {
-    color: Colors.fill_switch,
+    color: Colors.grey_text,
   },
   headerLeftBtn: {
     height: 40,
@@ -173,7 +189,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
   },
-
+  containerLinearGradient: {
+    alignItems: "center",
+    display: "flex",
+    justifyContent: "center",
+  },
   headerRightBtn: {
     height: 40,
     borderRadius: 50,

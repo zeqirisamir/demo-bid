@@ -17,15 +17,17 @@ import { AuthNavigationProp } from "../../navigaton/Types";
 import { setUser, setUserType } from "../../redux/auth/AuthReducer";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Animated } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 const LoginScreen = () => {
   const navigation = useNavigation<AuthNavigationProp["navigation"]>();
   const dispatch = useDispatch();
   const [data, setData] = useState({
-    email: "Buyer@gmail.com",
-    password: "1234",
+    email: "",
+    password: "",
   });
   const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [userTypes, setUserTypes] = useState("buyer");
   const user = useSelector((state: RootState) => state.authReducer.user);
@@ -37,7 +39,11 @@ const LoginScreen = () => {
   const inputAnimation = useRef(new Animated.Value(0)).current;
   const buttonAnimation = useRef(new Animated.Value(0)).current;
   const imageScale = useRef(new Animated.Value(0)).current;
-
+  const linearGradientBorder = [
+    Colors.yellow,
+    Colors.yellow,
+    Colors.main_white,
+  ];
   useEffect(() => {
     Animated.timing(inputAnimation, {
       toValue: 1,
@@ -89,7 +95,7 @@ const LoginScreen = () => {
     ],
   };
 
-  const saveTokenToStorage = async (data: string) => {
+  const saveUserDataToStorage = async (data: string) => {
     try {
       await AsyncStorage.setItem("userData", data);
     } catch (error) {
@@ -97,56 +103,61 @@ const LoginScreen = () => {
     }
   };
 
-  const getTokenFromStorage = async () => {
+  const saveTokenToStorage = async (data: string) => {
     try {
-      const token = await AsyncStorage.getItem("userData");
-      return token;
+      await AsyncStorage.setItem("userToken", data);
     } catch (error) {
-      console.error("Error retrieving token from AsyncStorage:", error);
-      return null;
+      console.error("Error saving token to AsyncStorage:", error);
     }
   };
-  useEffect(() => {
-    const getPreviousEmails = async () => {
-      const previousUserData = await AsyncStorage.getItem("userData");
-      if (previousUserData) {
-        const userData = JSON.parse(previousUserData);
-        setData(userData);
-        setLoading(true);
-        await handleLogin(userData);
-        setLoading(false);
-      }
-    };
-    getPreviousEmails();
-  }, []);
+
+  // useEffect(() => {
+  //   const getPreviousEmails = async () => {
+  //     const previousUserData = await AsyncStorage.getItem("userData");
+  //     if (previousUserData) {
+  //       console.log("previos data", previousUserData);
+
+  //       const userData = JSON.parse(previousUserData);
+  //       setData(userData);
+  //       setLoading(true);
+  //       await handleLogin(userData);
+  //       setLoading(false);
+  //     }
+  //   };
+  //   getPreviousEmails();
+  // }, []);
 
   const handleLogin = async (loginData = data) => {
     try {
-      const { res } = await signIn(loginData);
+      const { res, err } = await signIn(loginData);
       const status = res?.status;
       const type = res?.data?.data?.userType;
-      console.log("status", res);
+      const error = err?.response?.data?.status;
+      console.log("status", res?.data?.token);
 
       if (status === 200) {
         if (type === userTypes) {
           dispatch(setUser(res?.data));
-          await saveTokenToStorage(JSON.stringify(loginData));
+          dispatch(setUserType(res?.data?.userType));
+          await saveUserDataToStorage(JSON.stringify(res?.data?.data));
+          await saveTokenToStorage(res?.data?.token);
         } else {
           console.log(userTypes, "does not have an error", type);
           Alert.alert(`You do not have a ${userTypes} account`);
         }
-      } else if (status === 401) {
+      } else if (error === 401) {
         console.log("Password incorrect", res);
+        setError(true);
+        setErrorMessage("Password is incorrect");
+      } else if (error === 402) {
+        setError(true);
+        setErrorMessage("Email is incorrect");
       }
       console.log("pressing", res);
     } catch (error) {
       console.log("login error::", error);
     }
   };
-
-  // useEffect(() => {
-  //   console.log(usertype);
-  // }, [data]);
 
   const onSignupPressed = () => {
     navigation.navigate("SignUp");
@@ -161,82 +172,86 @@ const LoginScreen = () => {
   }
   return (
     <View style={styles.container}>
-      {error && (
-        <Text style={styles.error}>Email or password is incorrect</Text>
-      )}
-      <Animated.Image
-        source={require("../../assets/auction.png")}
-        style={[styles.image, animatedImageStyles]}
-      />
-      <Animated.View
-        style={[styles.animatedInputContainer, animatedInputStyles]}
+      <LinearGradient
+        colors={linearGradientBorder}
+        style={styles.containerLinearGradient}
       >
-        <TextInput
-          placeholder="Email"
-          autoCapitalize="none"
-          autoCorrect={false}
-          value={data?.email}
-          style={styles.input}
-          placeholderTextColor={Colors.grey_text}
-          onChangeText={(e) => setData({ ...data, email: e })}
-          keyboardType="email-address"
+        <Animated.Image
+          source={require("../../assets/auction.png")}
+          style={[styles.image, animatedImageStyles]}
         />
-        <TextInput
-          placeholder="Password"
-          placeholderTextColor={Colors.grey_text}
-          value={data?.password}
-          style={styles.input}
-          onChangeText={(e) => setData({ ...data, password: e })}
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-        />
-      </Animated.View>
+        <Animated.View
+          style={[styles.animatedInputContainer, animatedInputStyles]}
+        >
+          {error && <Text style={styles.error}>{errorMessage}</Text>}
+          <TextInput
+            placeholder="Email"
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+            value={data?.email}
+            style={styles.input}
+            placeholderTextColor={Colors.grey_text}
+            onChangeText={(e) => setData({ ...data, email: e })}
+            keyboardType="email-address"
+          />
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor={Colors.grey_text}
+            value={data?.password}
+            style={styles.input}
+            onChangeText={(e) => setData({ ...data, password: e })}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+          />
+        </Animated.View>
 
-      <View style={styles.userTypeContainer}>
-        <TouchableOpacity
-          style={[
-            styles.userTypeButton,
-            userTypes === "buyer" && styles.selectedUserType,
-          ]}
-          onPress={() => handleUserTypeChange("buyer")}
-        >
-          <Text style={styles.userTypeButtonText}>Buyer</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.userTypeButton,
-            userTypes === "seller" && styles.selectedUserType,
-          ]}
-          onPress={() => handleUserTypeChange("seller")}
-        >
-          <Text style={styles.userTypeButtonText}>Seller</Text>
-        </TouchableOpacity>
-      </View>
-
-      <Animated.View
-        style={[styles.animatedButtonContainer, animatedButtonStyles]}
-      >
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => handleLogin(data)}
-        >
-          <Text style={styles.buttonText}>Log In</Text>
-        </TouchableOpacity>
-      </Animated.View>
-      <Animated.View
-        style={[styles.animatedButtonContainer2, animatedButtonStyles]}
-      >
-        <View style={styles.orContainer}>
-          <View style={styles.line} />
-          <Text style={styles.orText}>or</Text>
-          <View style={styles.line} />
+        <View style={styles.userTypeContainer}>
+          <TouchableOpacity
+            style={[
+              styles.userTypeButton,
+              userTypes === "buyer" && styles.selectedUserType,
+            ]}
+            onPress={() => handleUserTypeChange("buyer")}
+          >
+            <Text style={styles.userTypeButtonText}>Buyer</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.userTypeButton,
+              userTypes === "seller" && styles.selectedUserType,
+            ]}
+            onPress={() => handleUserTypeChange("seller")}
+          >
+            <Text style={styles.userTypeButtonText}>Seller</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={onSignupPressed}>
-          <Text style={styles.signupText}>Sign Up</Text>
-        </TouchableOpacity>
-      </Animated.View>
+
+        <Animated.View
+          style={[styles.animatedButtonContainer, animatedButtonStyles]}
+        >
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => handleLogin(data)}
+          >
+            <Text style={styles.buttonText}>Log In</Text>
+          </TouchableOpacity>
+        </Animated.View>
+        <Animated.View
+          style={[styles.animatedButtonContainer2, animatedButtonStyles]}
+        >
+          <View style={styles.orContainer}>
+            <View style={styles.line} />
+            <Text style={styles.orText}>or</Text>
+            <View style={styles.line} />
+          </View>
+          <TouchableOpacity onPress={onSignupPressed}>
+            <Text style={styles.signupText}>Sign Up</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </LinearGradient>
     </View>
   );
 };
@@ -244,7 +259,6 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     backgroundColor: Colors.black_txt,
   },
@@ -267,6 +281,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 10,
+  },
+  containerLinearGradient: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
   },
   error: {
     color: Colors.error_red_txt,

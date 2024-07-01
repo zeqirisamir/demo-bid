@@ -1,38 +1,65 @@
 import React from "react";
 import { View, Text, StyleSheet, Image } from "react-native";
 import { Colors } from "../../theme/Colors";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { Product } from "../../navigaton/Types";
+import { calculateRemainingTime } from "../../data/constants";
 
-// Define interface for post data
 interface PostProps {
-  _id: string;
-  productName: string;
-  description: string;
-  startingBid: number;
-  duration: string;
-  image: string;
+  product: Product;
+  onDeletePress?: (id: string) => void;
+  isSeller?: boolean;
 }
 
-const Post: React.FC<PostProps> = ({
-  _id,
-  productName,
-  description,
-  startingBid,
-  duration,
-  image,
-}) => {
+const Post: React.FC<PostProps> = ({ product, onDeletePress, isSeller }) => {
+  const remainingTime = calculateRemainingTime(
+    product?.createdAt || "",
+    product.duration
+  );
+
   return (
-    <View style={styles.container} id={_id}>
+    <View style={styles.container}>
       <Image
-        source={{ uri: image }}
-        style={{ width: 50, height: 80, borderRadius: 10, alignSelf: "center" }}
+        source={{ uri: product?.imgSrc }}
+        style={{
+          width: 50,
+          height: 80,
+          borderRadius: 10,
+          alignSelf: "center",
+          backgroundColor: "grey",
+        }}
       />
       <View style={styles.content}>
-        <Text style={styles.productName}>{productName}</Text>
-        <Text style={styles.description}>{description}</Text>
-        <Text style={styles.duration}>Duration: {duration} days</Text>
+        <Text style={styles.productName}>{product?.productName}</Text>
+        <Text style={styles.description} numberOfLines={2}>
+          {product?.description}
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          {isSeller ? (
+            <Text style={styles.duration}> {remainingTime}</Text>
+          ) : (
+            <Text style={styles.duration}>
+              Duration: {product?.duration} days
+            </Text>
+          )}
+          {isSeller && (
+            <TouchableOpacity
+              style={styles.deleteBox}
+              onPress={() => onDeletePress(String(product?._id))}
+            >
+              <Text style={styles.deleteText}>Delete Post</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
       <View style={{ alignSelf: "center" }}>
-        <Text style={styles.startingBid}>{startingBid}£</Text>
+        <Text style={styles.startingBid}>{product?.startingBid}£</Text>
       </View>
     </View>
   );
@@ -40,7 +67,7 @@ const Post: React.FC<PostProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.main_white,
     padding: 10,
     marginBottom: 10,
     width: "95%",
@@ -72,6 +99,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#999",
   },
+  deleteText: {
+    fontSize: 16,
+    color: Colors.error_red_txt,
+    marginBottom: 5,
+    alignSelf: "center",
+    backgroundColor: Colors.error_red_bg,
+    padding: 2,
+    borderRadius: 4,
+  },
+  deleteBox: {},
 });
 
 export default Post;
